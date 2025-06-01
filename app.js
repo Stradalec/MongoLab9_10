@@ -69,7 +69,7 @@ async function startServer() {
                                 _id: "$_id",
                                 name: { $first: "$name" },
                                 author: { $first: "$author" },
-                                date: { $first: "$date" },
+                                date: { $first: { $toDate: "$date" } }, 
                                 avgScore: { $avg: "$reviews.score" },
                                 totalReviews: { $sum: 1 }
                             }
@@ -83,12 +83,17 @@ async function startServer() {
                         { $limit: 10 }
                     ]);
 
+                    data = data.map(item => ({
+                        ...item,
+                        avgScore: item.avgScore !== null ? item.avgScore : 0
+                    }));
+
                     fields = ['name', 'author', 'date', 'avgScore', 'totalReviews'];
                 } else {
 
                     data = await Article.find(filter, { reviews: 0 });
                     fields = Object.keys(Article.schema.paths)
-                        .filter(f => f !== 'reviews' && f !== '__v');
+                        .filter(f => f !== 'reviews' && f !== '__v' && f !== 'content' && f !== '_id');
                 }
 
                 res.render('articles', {
