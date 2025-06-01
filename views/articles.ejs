@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Список статей</title>
+    <style>
+        #banner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100000;
+            animation: bannerFade 2s forwards;
+        }
+
+        @keyframes bannerFade {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="/?top=true">Топ статей</a>
+    <h1>Список статей</h1>
+
+    <form method="get" action="/">
+        <label for="author">Поиск по автору:</label>
+        <select name="author" id="author" onchange="this.form.submit()">
+            <option value="all" <%=currentAuthor==='all' ? 'selected' : '' %>>Все авторы</option>
+            <% authors.forEach(function(author) { %>
+                <option value="<%= author %>" <%=author===currentAuthor ? 'selected' : '' %>><%= author %>
+                </option>
+                <% }) %>
+        </select>
+        <noscript><button type="submit">Искать</button></noscript>
+    </form>
+    <form method="get" action="/">
+        <label>Начальная дата: <input type="date" name="startDate" value="<%= currentStartDate %>"></label>
+        <label>Конечная дата: <input type="date" name="endDate" value="<%= currentEndDate %>"></label>
+        <button type="submit">Поиск по дате</button>
+    </form>
+
+    <table border="1" style="margin-top: 20px;">
+        <tr>
+            <% fields.forEach(field=> { %>
+                <th>
+                    <%= field==='avgScore' ? 'Рейтинг' : field==='totalReviews' ? 'Отзывов' : field %>
+                </th>
+                <% }) %>
+                    <th>Действия</th>
+        </tr>
+        <% data.forEach(item=> { %>
+            <tr>
+                <% fields.forEach(field=> { %>
+                    <td>
+                        <% if (field==='date' ) { %>
+                            <%= item[field].toLocaleDateString() %>
+                                <% } else if (field==='avgScore' ) { %>
+                                    <%= item[field].toFixed(1) %>
+                                        <% } else { %>
+                                            <%= item[field] %>
+                                                <% } %>
+                    </td>
+                    <% }) %>
+                        <td>
+                            <a href="/articles/<%= item._id %>" onclick="showLoader(event)">Подробнее</a>
+                            <form method="POST" action="/articles/delete/<%= item._id %>">
+                                <button type="submit">Удалить</button>
+                            </form>
+                        </td>
+            </tr>
+            <% }) %>
+    </table>
+
+    <p><a href="/articles/add">Добавить статью</a></p>
+
+     <img id="banner" src="/banner.jpg" alt="Не пропустите уникальное предложение!" 
+         style="width: 1000px; height: 1000px; display: none;">
+
+
+     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('a[href^="/articles/"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const banner = document.getElementById('banner');
+                    const targetUrl = this.href;
+                    
+                    if (!banner) {
+                        console.error('Элемент баннера не найден');
+                        return;
+                    }
+
+                    banner.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        window.location.href = targetUrl;
+                    }, 2000);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
