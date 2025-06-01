@@ -13,8 +13,11 @@ async function importArticles() {
     try {
 
         const jsonData = fs.readFileSync('./data/articles.json', 'utf-8');
-        const articles = JSON.parse(jsonData);
-
+        const rawArticles = JSON.parse(jsonData);
+        const articles = rawArticles.map(article => ({
+            ...article,
+            date: new Date(article.date)
+        }));
 
         const count = await Article.countDocuments();
         if (count === 0) {
@@ -38,10 +41,14 @@ async function startServer() {
             try {
                 const authors = await Article.distinct('author');
                 const isTop = req.query.top === 'true';
-                const { author, startDate, endDate } = req.query;
+                const { author, startDate, endDate, searchQuery } = req.query;
 
                 let data, fields;
                 const filter = {};
+                if (searchQuery) {
+                    filter.name = { $regex: new RegExp(searchQuery, 'i') };
+                }
+
                 if (author && author !== 'all') {
                     filter.author = author;
                 }
@@ -50,26 +57,33 @@ async function startServer() {
 
                     if (startDate) {
                         const start = new Date(startDate);
-                        start.setHours(0, 0, 0, 0);
+                        start.setUTCHours(0, 0, 0, 0);
                         filter.date.$gte = start;
                     }
 
                     if (endDate) {
                         const end = new Date(endDate);
-                        end.setHours(23, 59, 59, 999);
+                        end.setUTCHours(23, 59, 59, 999);
                         filter.date.$lte = end;
                     }
+
+                    console.log('UTC Фильтр:', {
+                        gte: filter.date.$gte?.toISOString(),
+                        lte: filter.date.$lte?.toISOString()
+                    });
                 }
+
 
                 if (isTop) {
                     data = await Article.aggregate([
+                        { $match: filter },
                         { $unwind: "$reviews" },
                         {
                             $group: {
                                 _id: "$_id",
                                 name: { $first: "$name" },
                                 author: { $first: "$author" },
-                                date: { $first: { $toDate: "$date" } }, 
+                                date: { $first: { $toDate: "$date" } },
                                 avgScore: { $avg: "$reviews.score" },
                                 totalReviews: { $sum: 1 }
                             }
@@ -92,9 +106,11 @@ async function startServer() {
                 } else {
 
                     data = await Article.find(filter, { reviews: 0 });
-                    fields = Object.keys(Article.schema.paths)
-                        .filter(f => f !== 'reviews' && f !== '__v' && f !== 'content' && f !== '_id');
+                    fields = ['name', 'author', 'date', 'tags']; 
                 }
+                console.log('Фильтр:', filter);
+                console.log('Найдено документов:', data.length);
+                
 
                 res.render('articles', {
                     collection: 'articles',
@@ -104,7 +120,8 @@ async function startServer() {
                     currentAuthor: req.query.author || 'all',
                     isTop,
                     currentStartDate: startDate || '',
-                    currentEndDate: endDate || ''
+                    currentEndDate: endDate || '',
+                    currentSearchQuery: searchQuery || ''
                 });
             } catch (err) {
                 res.status(500).send(err.message);

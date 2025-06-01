@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const articleSchema = new mongoose.Schema({
     name: String,
     author: String,
-    date: Date,
+    date: { type: Date, required: true },
     tags: String,
     content: [String],
     reviews: [

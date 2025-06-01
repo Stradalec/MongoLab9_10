@@ -15,10 +15,25 @@
         }
 
         @keyframes bannerFade {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+
+            20% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            80% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
         }
     </style>
 </head>
@@ -26,7 +41,13 @@
 <body>
     <a href="/?top=true">Топ статей</a>
     <h1>Список статей</h1>
-
+    <form method="get" action="/" style="margin-bottom: 15px;">
+        <label>Поиск по названию:
+            <input type="text" name="searchQuery" value="<%= currentSearchQuery %>">
+        </label>
+        <button type="submit">Искать</button>
+        <a href="/" style="margin-left: 10px;">Сбросить</a>
+    </form>
     <form method="get" action="/">
         <label for="author">Поиск по автору:</label>
         <select name="author" id="author" onchange="this.form.submit()">
@@ -58,13 +79,18 @@
                 <% fields.forEach(field=> { %>
                     <td>
                         <% if (field==='date' ) { %>
-                            <%= item[field].toLocaleDateString() %>
-                                <% } else if (field==='avgScore' ) { %>
-                                    <%= item[field].toFixed(1) %>
-                                        <% } else { %>
-                                            <%= item[field] %>
-                                                <% } %>
+                            <% if (item[field]) { %>
+                                <%= new Date(item[field]).toLocaleDateString('ru-RU') %>
+                                    <% } else { %>
+                                        Нет даты
+                                        <% } %>
+                                            <% } else if (field==='avgScore' ) { %>
+                                                <%= item[field].toFixed(1) %>
+                                                    <% } else { %>
+                                                        <%= item[field] %>
+                                                            <% } %>
                     </td>
+
                     <% }) %>
                         <td>
                             <a href="/articles/<%= item._id %>" onclick="showLoader(event)">Подробнее</a>
@@ -78,25 +104,25 @@
 
     <p><a href="/articles/add">Добавить статью</a></p>
 
-     <img id="banner" src="/banner.jpg" alt="Не пропустите уникальное предложение!" 
-         style="width: 1000px; height: 1000px; display: none;">
+    <img id="banner" src="/banner.jpg" alt="Не пропустите уникальное предложение!"
+        style="width: 1000px; height: 1000px; display: none;">
 
 
-     <script>
+    <script>
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('a[href^="/articles/"]').forEach(link => {
-                link.addEventListener('click', function(e) {
+                link.addEventListener('click', function (e) {
                     e.preventDefault();
                     const banner = document.getElementById('banner');
                     const targetUrl = this.href;
-                    
+
                     if (!banner) {
                         console.error('Элемент баннера не найден');
                         return;
                     }
 
                     banner.style.display = 'block';
-                    
+
                     setTimeout(() => {
                         window.location.href = targetUrl;
                     }, 2000);
