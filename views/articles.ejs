@@ -69,7 +69,7 @@
         <tr>
             <% fields.forEach(field=> { %>
                 <th>
-                    <%= field==='avgScore' ? 'Рейтинг' : field==='totalReviews' ? 'Отзывов' : field %>
+                    <%= fieldLabels[field] || field %>
                 </th>
                 <% }) %>
                     <th>Действия</th>
@@ -104,32 +104,44 @@
 
     <p><a href="/articles/add">Добавить статью</a></p>
 
-    <img id="banner" src="/banner.jpg" alt="Не пропустите уникальное предложение!"
+    <img id="banner" src="/banner1.jpg" alt="Не пропустите уникальное предложение!"
         style="width: 1000px; height: 1000px; display: none;">
 
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('a[href^="/articles/"]').forEach(link => {
-                link.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const banner = document.getElementById('banner');
-                    const targetUrl = this.href;
+    
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const bannerImages = [
+            '/banner1.jpg',
+            '/banner2.jpg',
+            '/banner3.jpg'
+        ];
+        document.querySelectorAll('a[href^="/articles/"]').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const banner = document.getElementById('banner');
+                const targetUrl = this.href;
 
-                    if (!banner) {
-                        console.error('Элемент баннера не найден');
-                        return;
-                    }
+                if (!banner) {
+                    console.error('Элемент баннера не найден');
+                    return;
+                }
 
-                    banner.style.display = 'block';
 
-                    setTimeout(() => {
-                        window.location.href = targetUrl;
-                    }, 2000);
-                });
+                const index = Math.floor(Math.random() * bannerImages.length);
+                banner.src = bannerImages[index];
+
+                banner.style.display = 'block';
+
+                setTimeout(() => {
+                    banner.style.display = 'none'; 
+                    window.location.href = targetUrl;
+                }, 2000);
             });
         });
-    </script>
+    });
+</script>
+
 </body>
 
 </html>

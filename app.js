@@ -36,7 +36,15 @@ async function startServer() {
         await mongoose.connect(process.env.MONGODB_URI);
         console.log('Подключена база данных');
         await importArticles();
-
+        const fieldLabels = {
+            name: 'Название',
+            author: 'Автор',
+            date: 'Дата',
+            tags: 'Теги',
+            content: 'Содержание',
+            avgScore: 'Рейтинг',
+            totalReviews: 'Отзывов'
+        };
         app.get('/', async (req, res) => {
             try {
                 const authors = await Article.distinct('author');
@@ -103,14 +111,14 @@ async function startServer() {
                     }));
 
                     fields = ['name', 'author', 'date', 'avgScore', 'totalReviews'];
+
+
                 } else {
 
                     data = await Article.find(filter, { reviews: 0 });
-                    fields = ['name', 'author', 'date', 'tags']; 
+                    fields = ['name', 'author', 'date', 'tags'];
                 }
-                console.log('Фильтр:', filter);
-                console.log('Найдено документов:', data.length);
-                
+
 
                 res.render('articles', {
                     collection: 'articles',
@@ -121,7 +129,8 @@ async function startServer() {
                     isTop,
                     currentStartDate: startDate || '',
                     currentEndDate: endDate || '',
-                    currentSearchQuery: searchQuery || ''
+                    currentSearchQuery: searchQuery || '',
+                    fieldLabels
                 });
             } catch (err) {
                 res.status(500).send(err.message);
