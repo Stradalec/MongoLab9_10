@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= article.name %></title>
+</head>
+<body>
+    <h1><%= article.name %></h1>
+    <p><b>Автор:</b> <%= article.author %></p>
+    <p><b>Дата:</b> <%= article.date ? article.date.toLocaleDateString() : '' %></p>
+    <p><b>Теги:</b> <%= article.tags %></p>
+    <p><b>Содержание:</b></p>
+    <ul>
+        <% article.content.forEach(c => { %>
+            <li><%= c %></li>
+        <% }) %>
+    </ul>
+    <h2>Отзывы</h2>
+    <% if (article.reviews && article.reviews.length) { %>
+        <ul>
+            <% article.reviews.forEach(r => { %>
+                <li>
+                    <b><%= r.name %></b>:
+                    <%= r.text %>
+                    (Оценка: <%= r.score %>)
+                </li>
+            <% }) %>
+        </ul>
+    <% } else { %>
+        <p>Пока нет отзывов.</p>
+    <% } %>
+    <p><a href="/">← К списку статей</a></p>
+</body>
+</html>

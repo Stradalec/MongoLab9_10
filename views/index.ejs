@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Главный экран</title>
+</head>
+
+<body>
+    <h1>Доступные статьи</h1>
+    <ul>
+        <% collections.forEach(col=> { %>
+            <li><a href="/<%= col %>">
+                    <%= col %>
+                </a></li>
+            <% }) %>
+    </ul>
+</body>
+
+</html>
